@@ -10,6 +10,22 @@
 				"text" : "ui_browse_properties_scheme_color",
 				"type" : "color",
 				"value" : "0 0 0"
+			},
+			"show_developer_splash" : 
+			{
+				"index" : 1,
+				"order" : 101,
+				"text" : "Developer Splash Screen",
+				"type" : "bool",
+				"value" : true
+			},
+			"show_intro" : 
+			{
+				"index" : 0,
+				"order" : 100,
+				"text" : "Intro Sequence",
+				"type" : "bool",
+				"value" : true
 			}
 		}
 	},
