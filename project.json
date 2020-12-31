@@ -21,11 +21,24 @@
 			},
 			"show_intro" : 
 			{
-				"index" : 0,
-				"order" : 100,
+				"index" : 2,
+				"order" : 102,
 				"text" : "Intro Sequence",
 				"type" : "bool",
 				"value" : true
+			},
+			"ui_scale" : 
+			{
+				"fraction" : true,
+				"index" : 0,
+				"max" : 2,
+				"min" : 0.5,
+				"order" : 100,
+				"precision" : 1,
+				"step" : 0.10000000000000001,
+				"text" : "UI Scale",
+				"type" : "slider",
+				"value" : 1
 			}
 		}
 	},

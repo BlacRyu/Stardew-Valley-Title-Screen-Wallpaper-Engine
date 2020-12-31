@@ -1,0 +1,45 @@
+Delay before starting to scroll up: 5.95s
+Time from starting to scroll to stopping: 9.9
+
+
+Possible features:
+- Allow for arbitrary scaling.
+- Day/Night cycle.
+- 
+
+
+
+
+
+
+
+
+Pseudocode:
+
+Scene:
+Init() {
+	shared.sceneY = 0.0;
+	fadeFromWhiteTimer = 4.0;
+	logoFadeTimer = 5.0;
+	cuckleFishTimer = 4.0;
+}
+
+Update(time){
+	
+}
+
+
+
+
+Clouds:
+Update(time) {
+	
+}
+
+
+
+
+Sky:
+update(time) {
+	
+}
