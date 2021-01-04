@@ -2,10 +2,28 @@ Delay before starting to scroll up: 5.95s
 Time from starting to scroll to stopping: 9.9
 
 
+Sound file names: https://docs.google.com/spreadsheets/d/1CpDrw23peQiq-C7F2FjYOMePaYe0Rc9BwQsj3h6sjyo
+
+
+ToDo:
+- Big Cloud(s)
+- Stars
+- Reactive leaves
+- Junimos
+- Alien
+- Corner easter-egg
+- Mute button
+
+
 Possible features:
 - Allow for arbitrary scaling.
 - Day/Night cycle.
-- 
+- Different weathers
+	- Rain
+	- Snow
+	- Cherry Blossoms
+- Restore button switches to a third person view of the JoJo office cubicle with the wallpaper on the computer screen.
+	- Capture scene in a buffer and display it on the computer screen , maybe with the CRT effect.
 
 
 
@@ -14,32 +32,14 @@ Possible features:
 
 
 
-Pseudocode:
 
-Scene:
-Init() {
-	shared.sceneY = 0.0;
-	fadeFromWhiteTimer = 4.0;
-	logoFadeTimer = 5.0;
-	cuckleFishTimer = 4.0;
-}
-
-Update(time){
-	
-}
+Done:
+X Title card
+X Title buttons
+X Small Clouds
+X Intro birds
 
 
 
 
-Clouds:
-Update(time) {
-	
-}
 
-
-
-
-Sky:
-update(time) {
-	
-}

@@ -1,8 +1,8 @@
 {
 	"camera" : 
 	{
-		"center" : "0.00000 0.00000 0.00000",
-		"eye" : "0.00000 0.00000 1.00000",
+		"center" : "0.00000 0.00000 -1.00000",
+		"eye" : "0.00000 0.00000 0.00000",
 		"up" : "0.00000 1.00000 0.00000"
 	},
 	"general" : 
@@ -62,7 +62,7 @@
 			"solid" : true,
 			"visible" : 
 			{
-				"script" : "'use strict';\n\nlet bEnableDebugText = true;\nlet debugText_Layers = [];\nlet debugText_FlashColor = new Vec3(0.5, 1.0, 1.0);\nlet debugText_Color = new Vec3(1.0, 1.0, 1.0);\nlet debugText_Size = 12;\nlet debugText_Alpha = 0.75;\nlet debugText_FlashScale = 1.01;\n/** How many milliseconds to fade from the flash color to the normal \n * \tcolor when the text is updated. */\nlet debugText_FlashTime = 250;\n/** How many milliseconds to display the text before starting to fade out. */\nlet debugText_StickTime = 500;\n/** How many milliseconds to fade out the debug text before removing it. */\nlet debugText_FadeTime = 1500;\n\nexport function update() {\n\tlet currentTime = new Date().getTime();\n\tdebugText_Layers.forEach(\n\t\tfunction(textLayer, index, array) {\n\t\t\tif (currentTime > textLayer.lastUpdated + (debugText_StickTime + debugText_FadeTime)) {\n\t\t\t\ttextLayer.alpha = 0;\n\t\t\t\tthisScene.destroyLayer(textLayer);\n\t\t\t\tarray.splice(index, 1);\n\t\t\t}\n\t\t\telse if (currentTime > textLayer.lastUpdated + debugText_StickTime) {\n\t\t\t\ttextLayer.color = debugText_Color;\n\t\t\t\tlet fadeLerp = (currentTime - (textLayer.lastUpdated + debugText_StickTime)) / debugText_FadeTime;\n\t\t\t\ttextLayer.alpha = OMGHelpers.lerp(debugText_Alpha, 0, fadeLerp);\n\t\t\t}\n\t\t\telse {\n\t\t\t\tlet flashLerp = OMGHelpers.clamp((currentTime - textLayer.lastChanged) / debugText_FlashTime);\n\t\t\t\ttextLayer.color = OMGHelpers.lerp(debugText_FlashColor, debugText_Color, flashLerp);\n\t\t\t\ttextLayer.scale = new Vec3(OMGHelpers.lerp(debugText_FlashScale, 1, flashLerp));\n\t\t\t\ttextLayer.alpha = debugText_Alpha;\n\t\t\t}\n\t\t\ttextLayer.origin = new Vec3(0, engine.canvasSize.y - index * (debugText_Size * 3 + 10), 0);\n\t\t\ttextLayer.visible = bEnableDebugText;\n\t\t}\n\t);\n}\n\nclass OMGHelpers {\n\t/** Prints all key/value pairs present on the object to the console. */\n\tstatic printObjectValues(obj){\n\t\tif (typeof(obj) !== 'object' || obj === null)\n\t\t\treturn;\n\n\t\tfor (const key of Object.keys(obj))\n\t\t\tconsole.log(key + \" - \" + obj[key]);\n\t}\n\n\t/** Attempts to add two values together. */\n\tstatic add(v1, v2) {\n\t\tif (!v2)\n\t\t\treturn v1;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 + v2;\n\t\telse if (v1.add)\n\t\t\treturn v1.add(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Attempts to subtract the second value from the first value. */\n\tstatic subtract(v1, v2) {\n\t\tif (!v2)\n\t\t\treturn v1;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 - v2;\n\t\telse if (v1.subtract)\n\t\t\treturn v1.subtract(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Attempts to multiply two values together. */\n\tstatic multiply(v1, v2) {\n\t\tif (v2 === undefined)\n\t\t\treturn undefined;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 * v2;\n\t\telse if (v1.multiply)\n\t\t\treturn v1.multiply(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Attempts to divide the first value by the second value. */\n\tstatic divide(v1, v2) {\n\t\tif (!v2)\n\t\t\treturn undefined;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 * v2;\n\t\telse if (v1.multiply)\n\t\t\treturn v1.multiply(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Restricts a value to remain between two boundary values. \n\t * @param {number} val - The value to be restricted.\n\t * @param {number} min - The lower bound.\n\t * @param {number} max - The upper bound.\n\t*/\n\tstatic clamp(val, min = 0, max = 1) {\n\t\tswitch (typeof val) {\n\t\tcase \"number\":\n\t\t\treturn Math.min(max, Math.max(min, val));\n\t\t\tbreak;\n\t\tdefault:\n\t\t\treturn 0;\n\t\t\tbreak;\n\t\t}\n\t}\n\n\t/** Interpolate linearly from the first value to the second based on the third (0 to 1) */\n\tstatic lerp(v1, v2, percent) {\n\t\tif (typeof(v1) === \"number\")\n\t\t\treturn v1 + (v2 - v1) * percent;\n\t\telse if (v1 instanceof Vec2) {\n\t\t\tlet x = v1.x + (v2.x - v1.x) * percent;\n\t\t\tlet y = v1.y + (v2.y - v1.y) * percent;\n\t\t\treturn new Vec2(x, y);\n\t\t}\n\t\telse if (v1 instanceof Vec3) {\n\t\t\tlet x = v1.x + (v2.x - v1.x) * percent;\n\t\t\tlet y = v1.y + (v2.y - v1.y) * percent;\n\t\t\tlet z = v1.z + (v2.z - v1.z) * percent;\n\t\t\treturn new Vec3(x, y, z);\n\t\t}\n\t\telse if (v1 instanceof Vec4) {\n\t\t\tlet x = v1.x + (v2.x - v1.x) * percent;\n\t\t\tlet y = v1.y + (v2.y - v1.y) * percent;\n\t\t\tlet z = v1.z + (v2.z - v1.z) * percent;\n\t\t\tlet w = v1.w + (v2.w - v1.w) * percent;\n\t\t\treturn new Vec4(x, y, z, w);\n\t\t}\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Prints a stack trace to the console. */\n\tstatic stackTrace() {\n\t\treturn console.log(new Error().stack);\n\t}\n\t\n\t/** Creates or updates a text layer in the corner of the screen. \n\t * @param {string} name - The name of the text layer to create or update.\n\t * @param {string} text - The text that the layer should display.\n\t*/\n\tstatic debugText(name, text) {\n\t\tif (bEnableDebugText && name !== undefined && text !== undefined) {\n\t\t\tlet layer = thisScene.getLayer(name.toString());\n\t\t\tif (layer) {\n\t\t\t\tif (layer.text != text) {\n\t\t\t\t\tlayer.text = text;\n\t\t\t\t\tlayer.lastChanged = layer.lastUpdated = new Date().getTime();\n\t\t\t\t\tlayer.color = debugText_FlashColor;\n\t\t\t\t\tlayer.scale = new Vec3(debugText_FlashScale);\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t\tlayer.lastUpdated = new Date().getTime();\n\t\t\t}\n\t\t\telse {\n\t\t\t\tlet layerSettings = new Object();\n\t\t\t\tlayerSettings.name = name.toString();\n\t\t\t\tlayerSettings.text = text;\n\t\t\t\tlayerSettings.pointsize = debugText_Size;\n\t\t\t\tlayerSettings.font = \"systemfont_consolas\";\n\t\t\t\tlayerSettings.origin = \"0, \" + (engine.canvasSize.y - debugText_Layers.length * (debugText_Size * 3 + 10)) + \", 0\";\n\t\t\t\tlayerSettings.verticalalign = \"top\";\n\t\t\t\tlayerSettings.horizontalalign = \"left\";\n\t\t\t\tlayerSettings.color = debugText_FlashColor.x + \", \" + debugText_FlashColor.y + \", \" + debugText_FlashColor.z;\n\t\t\t\tlayerSettings.alpha = debugText_Alpha;\n\t\t\t\tlayer = thisScene.createLayer(layerSettings)\n\t\t\t\tlayer.lastChanged = layer.lastUpdated = new Date().getTime();\n\t\t\t\tdebugText_Layers.push(layer);\n\t\t\t}\n\t\t}\n\t}\n}\n\nshared.OMGHelpers = OMGHelpers;",
+				"script" : "'use strict';\n\nlet bEnableDebugText = true;\nlet debugText_Layers = [];\nlet debugText_FlashColor = new Vec3(0.5, 1.0, 1.0);\nlet debugText_Color = new Vec3(1.0, 1.0, 1.0);\nlet debugText_ShowBackground = true;\nlet debugText_BackgroundColor = new Vec3(0.1, 0.1, 0.1);\nlet debugText_Size = 5;\nlet debugText_Alpha = 0.75;\nlet debugText_FlashScale = 1.01;\n/** How many milliseconds to fade from the flash color to the normal color when the text is updated. */\nlet debugText_FlashTime = 250;\n/** How many milliseconds to display the text before starting to fade out. */\nlet debugText_StickTime = 500;\n/** How many milliseconds to fade out the debug text before removing it. */\nlet debugText_FadeTime = 1500;\n\n\nlet _canvasToScreen = 1.0;\n\n\nexport function update() {\n\tlet currentTime = new Date().getTime();\n\t\n\tdebugText_Layers.forEach(\n\t\tfunction(textLayer, index, array) {\n\t\t\tif (currentTime > textLayer.lastUpdated + (debugText_StickTime + debugText_FadeTime)) {\n\t\t\t\ttextLayer.alpha = 0;\n\t\t\t\tthisScene.destroyLayer(textLayer);\n\t\t\t\tarray.splice(index, 1);\n\t\t\t}\n\t\t\telse if (currentTime > textLayer.lastUpdated + debugText_StickTime) {\n\t\t\t\ttextLayer.color = debugText_Color;\n\t\t\t\tlet fadeLerp = (currentTime - (textLayer.lastUpdated + debugText_StickTime)) / debugText_FadeTime;\n\t\t\t\ttextLayer.alpha = OMGHelpers.lerp(debugText_Alpha, 0, fadeLerp);\n\t\t\t}\n\t\t\telse {\n\t\t\t\tlet flashLerp = OMGHelpers.clamp((currentTime - textLayer.lastChanged) / debugText_FlashTime);\n\t\t\t\ttextLayer.color = OMGHelpers.lerp(debugText_FlashColor, debugText_Color, flashLerp);\n\t\t\t\ttextLayer.scale = new Vec3(OMGHelpers.lerp(debugText_FlashScale * _canvasToScreen, 1 * _canvasToScreen, flashLerp));\n\t\t\t\ttextLayer.alpha = debugText_Alpha;\n\t\t\t}\n\n\t\t\tif (engine.canvasSize.x !== 0) {\n\t\t\t\tlet cornerY = engine.canvasSize.y;\n\t\t\t\tlet cornerX = 0;\n\t\t\t\tlet screenAspectRatio = engine.screenResolution.x / engine.screenResolution.y;\n\t\t\t\tlet canvasAspectRatio = engine.canvasSize.x / engine.canvasSize.y;\n\t\t\t\tif (screenAspectRatio > canvasAspectRatio) {\n\t\t\t\t\tcornerY = engine.screenResolution.y * engine.canvasSize.x / engine.screenResolution.x;\n\t\t\t\t\tcornerY += (engine.canvasSize.y - cornerY) / 2;\n\t\t\t\t}\n\t\t\t\telse {\n\t\t\t\t\tcornerX = engine.screenResolution.x * engine.canvasSize.y / engine.screenResolution.y;\n\t\t\t\t\tcornerX = (engine.canvasSize.x - cornerX) / 2;\n\t\t\t\t}\n\t\t\t\ttextLayer.origin = new Vec3(cornerX, cornerY - index * (debugText_Size * 4.9 - 0.5) * _canvasToScreen, 0);\n\t\t\t}\n\t\t\telse {\n\t\t\t\tlet aspectRatio = engine.screenResolution.x / engine.screenResolution.y;\n\t\t\t\tlet ct = thisScene.getCameraTransforms();\n\t\t\t\tlet forward = ct.center.subtract(ct.eye).normalize();\n\t\t\t\tlet up = ct.up;\n\t\t\t\tlet right = forward.cross(up);\n\t\t\t\tlet pos = ct.eye.add(forward).add(up.multiply(0.45)).add(right.multiply(-0.45 * aspectRatio));\n\t\t\t\tpos.y -= index * (debugText_Size * .002);\n\t\t\t\ttextLayer.origin = new Vec3(pos.x, pos.y, pos.z);\n\t\t\t\ttextLayer.scale = new Vec3(0.0005);\n\t\t\t}\n\t\t\ttextLayer.pointsize = debugText_Size;\n\n\t\t\ttextLayer.visible = bEnableDebugText;\n\t\t}\n\t);\n}\n\n\nexport function init() {\n\t_canvasToScreen = Math.min(engine.canvasSize.x / engine.screenResolution.x, engine.canvasSize.y / engine.screenResolution.y);\n}\n\n\nexport function resizeScreen() {\n\t_canvasToScreen = Math.min(engine.canvasSize.x / engine.screenResolution.x, engine.canvasSize.y / engine.screenResolution.y);\n}\n\n\n\n\nclass OMGHelpers {\n\t/** Prints all key/value pairs present on the object to the console. */\n\tstatic printObjectValues(obj){\n\t\tif (typeof(obj) !== 'object' || obj === null)\n\t\t\treturn;\n\n\t\tfor (const key of Object.keys(obj))\n\t\t\tconsole.log(key + \" - \" + obj[key]);\n\t}\n\n\t/** Attempts to add two values together. */\n\tstatic add(v1, v2) {\n\t\tif (!v2)\n\t\t\treturn v1;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 + v2;\n\t\telse if (v1.add)\n\t\t\treturn v1.add(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Attempts to subtract the second value from the first value. */\n\tstatic subtract(v1, v2) {\n\t\tif (!v2)\n\t\t\treturn v1;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 - v2;\n\t\telse if (v1.subtract)\n\t\t\treturn v1.subtract(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Attempts to multiply two values together. */\n\tstatic multiply(v1, v2) {\n\t\tif (v2 === undefined)\n\t\t\treturn undefined;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 * v2;\n\t\telse if (v1.multiply)\n\t\t\treturn v1.multiply(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Attempts to divide the first value by the second value. */\n\tstatic divide(v1, v2) {\n\t\tif (!v2)\n\t\t\treturn undefined;\n\t\telse if (typeof v1 === 'number' || typeof v1 === 'string')\n\t\t\treturn v1 * v2;\n\t\telse if (v1.multiply)\n\t\t\treturn v1.multiply(v2);\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/**\n\t * True if the two parameters are the same type and contain equal values, otherwise false\n\t * @param [epsilon] {number} The minimum difference allowed between number values before they are considered non-equal (helps avoid some floating-point issues)\n\t * @return {boolean}\n\t */\n\tstatic equal(v1, v2, epsilon = 0.0001){\n\t\tif (v1 instanceof Vec3) {\n\t\t\tif (v2 instanceof Vec3)\n\t\t\t\treturn (Math.abs(v1.x - v2.x) < epsilon && Math.abs(v1.y - v2.y) < epsilon && Math.abs(v1.z - v1.z) < epsilon);\n\t\t\telse\n\t\t\t\treturn false;\n\t\t}\n\t\telse if (v1 instanceof Vec2) {\n\t\t\tif (v2 instanceof Vec2)\n\t\t\t\treturn (Math.abs(v1.x - v2.x) < epsilon && Math.abs(v1.y - v2.y) < epsilon);\n\t\t\telse\n\t\t\t\treturn false;\n\t\t}\n\t\telse switch (typeof v1) {\n\t\tcase \"number\":\n\t\t\tif (typeof v2 === \"number\")\n\t\t\t\treturn (Math.abs(v1 - v2) < epsilon);\n\t\t\telse\n\t\t\t\treturn false;\n\t\t\tbreak;\n\t\tdefault:\n\t\t\treturn (v1 === v2);\n\t\t}\n\t}\n\n\t/** Restricts a value to remain between two boundary values. \n\t * @param {number} val - The value to be restricted.\n\t * @param {number} min - The lower bound.\n\t * @param {number} max - The upper bound.\n\t*/\n\tstatic clamp(val, min = 0, max = 1) {\n\t\tif (typeof(val) === \"number\")\n\t\t\treturn Math.min(max, Math.max(min, val));\n\t\telse if (val instanceof Vec2) {\n\t\t\tlet x = Math.min(max.x, Math.max(min.x, val.x));\n\t\t\tlet y = Math.min(max.y, Math.max(min.y, val.y));\n\t\t\treturn new Vec2(x, y);\n\t\t}\n\t\telse if (val instanceof Vec3) {\n\t\t\tlet x = Math.min(max.x, Math.max(min.x, val.x));\n\t\t\tlet y = Math.min(max.y, Math.max(min.y, val.y));\n\t\t\tlet z = Math.min(max.z, Math.max(min.z, val.z));\n\t\t\treturn new Vec3(x, y, z);\n\t\t}\n\t\telse if (val instanceof Vec4) {\n\t\t\tlet x = Math.min(max.x, Math.max(min.x, val.x));\n\t\t\tlet y = Math.min(max.y, Math.max(min.y, val.y));\n\t\t\tlet z = Math.min(max.z, Math.max(min.z, val.z));\n\t\t\tlet w = Math.min(max.w, Math.max(min.w, val.w));\n\t\t\treturn new Vec4(x, y, z, w);\n\t\t}\n\t}\n\n\t/** Interpolate linearly from the first value to the second based on the third (0 to 1) */\n\tstatic lerp(v1, v2, percent) {\n\t\tif (typeof(v1) === \"number\")\n\t\t\treturn v1 + (v2 - v1) * percent;\n\t\telse if (v1 instanceof Vec2) {\n\t\t\tlet x = v1.x + (v2.x - v1.x) * percent;\n\t\t\tlet y = v1.y + (v2.y - v1.y) * percent;\n\t\t\treturn new Vec2(x, y);\n\t\t}\n\t\telse if (v1 instanceof Vec3) {\n\t\t\tlet x = v1.x + (v2.x - v1.x) * percent;\n\t\t\tlet y = v1.y + (v2.y - v1.y) * percent;\n\t\t\tlet z = v1.z + (v2.z - v1.z) * percent;\n\t\t\treturn new Vec3(x, y, z);\n\t\t}\n\t\telse if (v1 instanceof Vec4) {\n\t\t\tlet x = v1.x + (v2.x - v1.x) * percent;\n\t\t\tlet y = v1.y + (v2.y - v1.y) * percent;\n\t\t\tlet z = v1.z + (v2.z - v1.z) * percent;\n\t\t\tlet w = v1.w + (v2.w - v1.w) * percent;\n\t\t\treturn new Vec4(x, y, z, w);\n\t\t}\n\t\telse\n\t\t\treturn undefined;\n\t}\n\n\t/** Prints a stack trace to the console. */\n\tstatic stackTrace() {\n\t\treturn console.log(new Error().stack);\n\t}\n\t\n\t/** Creates or updates a text layer in the corner of the screen. \n\t * @param {string} name - The name of the text layer to create or update.\n\t * @param {string} text - The text that the layer should display.\n\t*/\n\tstatic debugText(name, text) {\n\t\tif (bEnableDebugText && name !== undefined && text !== undefined) {\n\t\t\tlet layer = thisScene.getLayer(name.toString());\n\t\t\tif (layer) {\n\t\t\t\tif (layer.text != text) {\n\t\t\t\t\tlayer.text = text;\n\t\t\t\t\tlayer.lastChanged = layer.lastUpdated = new Date().getTime();\n\t\t\t\t\tlayer.color = debugText_FlashColor;\n\t\t\t\t\tlayer.scale = new Vec3(debugText_FlashScale * _canvasToScreen);\n\t\t\t\t}\n\t\t\t\telse\n\t\t\t\t\tlayer.lastUpdated = new Date().getTime();\n\t\t\t}\n\t\t\telse {\n\t\t\t\tlet layerSettings = new Object();\n\t\t\t\tif (engine.canvasSize.x !== 0) {\n\t\t\t\t\tlayerSettings.origin = \"0, \" + (engine.canvasSize.y - debugText_Layers.length * (debugText_Size * 3 + 10)) + \", 0\";\n\t\t\t\t}\n\t\t\t\telse {\n\t\t\t\t\tlet ct = thisScene.getCameraTransforms();\n\t\t\t\t\tlet forward = ct.center.subtract(ct.eye).normalize();\n\t\t\t\t\tlet up = ct.up;\n\t\t\t\t\tlet right = forward.cross(up);\n\t\t\t\t\tlet pos = new Vec3(0, .5, 0);//ct.eye.add(forward);//.add(right);\n\t\t\t\t\tlayerSettings.origin = `${pos.x}, ${pos.y}, ${pos.z}`;\n\t\t\t\t}\n\t\t\t\tlayerSettings.name = name.toString();\n\t\t\t\tlayerSettings.text = text;\n\t\t\t\tlayerSettings.pointsize = debugText_Size;\n\t\t\t\tlayerSettings.font = \"systemfont_consolas\";\n\n\t\t\t\tlayerSettings.verticalalign = \"top\";\n\t\t\t\tlayerSettings.horizontalalign = \"left\";\n\t\t\t\tlayerSettings.color = debugText_FlashColor.x + \", \" + debugText_FlashColor.y + \", \" + debugText_FlashColor.z;\n\t\t\t\tlayerSettings.opaquebackground = debugText_ShowBackground;\n\t\t\t\tlayerSettings.backgroundcolor = debugText_BackgroundColor;\n\t\t\t\tlayerSettings.padding = 0;\n\t\t\t\tlayerSettings.alpha = debugText_Alpha;\n\t\t\t\tlayer = thisScene.createLayer(layerSettings);\n\t\t\t\tlayer.lastChanged = layer.lastUpdated = new Date().getTime();\n\t\t\t\tdebugText_Layers.push(layer);\n\t\t\t}\n\t\t}\n\t}\n}\n\nshared.OMGHelpers = OMGHelpers;",
 				"value" : false
 			}
 		},
@@ -174,6 +174,31 @@
 			"color" : "1.00000 1.00000 1.00000",
 			"colorBlendMode" : 0,
 			"copybackground" : true,
+			"id" : 15,
+			"image" : "models/util/solidlayer.json",
+			"ledsource" : false,
+			"locktransforms" : true,
+			"name" : "Shared logic (script)",
+			"origin" : "960.00000 540.00000 0.00000",
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : "1.00000 1.00000 1.00000",
+			"size" : "0.00000 0.00000",
+			"solid" : true,
+			"visible" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\n/** \n * Coordinates that correspond to the horizontal extents of the visible part of the wallpaper based on the current display's aspect ratio. \n * @type Vec2\n*/\nshared.screenBoundsX = undefined;\n/** \n * Canvas coordinates that correspond to the vertical extents of the visible part of the wallpaper based on the current display's aspect ratio. \n * @type Vec2\n*/\nshared.screenBoundsY = undefined;\n\n/** \n * Multiply scale by this value to make sure an object's pixel dimensions do not change when the screen dimensions change.\n * @type number\n */\nshared.canvasToScreen = undefined;\n\n/**\n * Used to scale up certain UI elements on large screen resolutions.\n * @type number\n */\nshared.zoom = undefined;\n\n/** Horizontal offset for the title card and buttons. Used when transitioning to other menus. */\nshared.globalXOffset = 0;\n\n/** Global scale multiplier for UI elements. */\nshared.ui_scale = 1;\n\n\nexport function init() {\n\tresizeScreen();\n}\n\nexport function resizeScreen() {\n\tshared.canvasToScreen = Math.min(engine.canvasSize.x / engine.screenResolution.x, engine.canvasSize.y / engine.screenResolution.y);\n\t\n\tshared.zoom = engine.screenResolution.y < 800 || engine.screenResolution.x < 1200 ? 2 : 3;\n\n\tlet screenAspectRatio = engine.screenResolution.x / engine.screenResolution.y;\n\tlet canvasAspectRatio = engine.canvasSize.x / engine.canvasSize.y;\n\tif (screenAspectRatio > canvasAspectRatio) {\n\t\tlet height = engine.screenResolution.y * engine.canvasSize.x / engine.screenResolution.x;\n\t\tlet cornerOffset = (engine.canvasSize.y - height) / 2;\n\t\tshared.screenBoundsX = new Vec2(0, engine.canvasSize.x);\n\t\tshared.screenBoundsY = new Vec2(cornerOffset, engine.canvasSize.y - cornerOffset);\n\t}\n\telse {\n\t\tlet width = engine.screenResolution.x * engine.canvasSize.y / engine.screenResolution.y;\n\t\tlet cornerOffset = (engine.canvasSize.x - width) / 2;\n\t\tshared.screenBoundsX = new Vec2(cornerOffset, engine.canvasSize.x - cornerOffset);\n\t\tshared.screenBoundsY = new Vec2(0, engine.canvasSize.y);\n\t}\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tif (changedUserProperties.ui_scale !== undefined) {\n\t\tshared.ui_scale = changedUserProperties.ui_scale;\n\t}\n}\n\n\n\n\n// shared.viewportY = 0;\n// let viewportDY = 0.01;\n\n// export function init() {\n// }\n\n\n// export function update() {\n// \tshared.viewportY += viewportDY;\n// \tif (viewportDY > 0.0)\n// \t\tviewportDY += 3.0/500.0;\n// \tif (shared.viewportY > 1000.0) {\n// \t\tif (viewportDY != 0.0) {\n// \t\t\t// stuff\n// \t\t}\n// \t\tviewportDY = 0.0;\n// \t}\n\t\t\n// }",
+				"value" : false
+			}
+		},
+		{
+			"alignment" : "center",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
 			"id" : 13,
 			"image" : "models/util/solidlayer.json",
 			"ledsource" : false,
@@ -212,32 +237,7 @@
 			"solid" : true,
 			"visible" : 
 			{
-				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\nconst AudioManager = shared.AudioManager;\nconst LinearInterp = shared.LinearInterp;\nconst EaseOutInterp = shared.EaseOutInterp;\nconst EaseOutStrongInterp = shared.EaseOutStrongInterp;\nconst EaseInInterp = shared.EaseInInterp;\nconst EaseInOutInterp = shared.EaseInOutInterp;\nconst LayerParenting = shared.LayerParenting;\n\nlet show_developer_splash = undefined;\nlet show_intro = undefined;\nshared.timeNudge = 0;\nshared.viewportY = 0;\n\n\n// Register audio\nlet a_mouseClick = engine.registerAsset(\"sounds/mouseclick.ogg\");\n\n\n// \"Private variables\"\nlet activePhase = undefined;\nlet phaseTime = 0.0;\nlet phaseProgress = 0.0;\n\n\nconst ScenePhase = {\n\tSPLASH : {\n\t\tname : \"splash\",\n\t\tlength : 7.0,\n\t\ttimeLine : [\n\t\t\t{\n\t\t\t\ttime : 0,\n\t\t\t\texecute() {\n\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Closed Eyes\"),\n\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\tstartValue: 0,\n\t\t\t\t\t\tendValue: 1,\n\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t});\n\t\t\t\t\t// new LinearInterp({\n\t\t\t\t\t// \ttargetObject: thisScene.getLayer(\"ConcernedApe_2\"),\n\t\t\t\t\t// \tpropertyName: \"alpha\",\n\t\t\t\t\t// \tstartValue: 0,\n\t\t\t\t\t// \tendValue: 1,\n\t\t\t\t\t// \tduration: 0.5\n\t\t\t\t\t// });\n\t\t\t\t\t// new LinearInterp({\n\t\t\t\t\t// \ttargetObject: thisScene.getLayer(\"ConcernedApe_3\"),\n\t\t\t\t\t// \tpropertyName: \"alpha\",\n\t\t\t\t\t// \tstartValue: 0,\n\t\t\t\t\t// \tendValue: 1,\n\t\t\t\t\t// \tduration: 0.5\n\t\t\t\t\t// });\n\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Text\"),\n\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\tstartValue: 0,\n\t\t\t\t\t\tendValue: 1,\n\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 1,\n\t\t\t\texecute() {\tAudioManager.playSound(a_mouseClick, 1); }\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 2.5,\n\t\t\t\texecute() {\tAudioManager.playSound(a_mouseClick, 1); }\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 3,\n\t\t\t\texecute() {\tAudioManager.playSound(a_mouseClick, 1); }\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 5,\n\t\t\t\texecute() {\n\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Closed Eyes\"),\n\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\tstartValue: 1,\n\t\t\t\t\t\tendValue: 0,\n\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t});\n\t\t\t\t\t// new LinearInterp({\n\t\t\t\t\t// \ttargetObject: thisScene.getLayer(\"ConcernedApe_2\"),\n\t\t\t\t\t// \tpropertyName: \"alpha\",\n\t\t\t\t\t// \tstartValue: 1,\n\t\t\t\t\t// \tendValue: 0,\n\t\t\t\t\t// \tduration: 0.5\n\t\t\t\t\t// });\n\t\t\t\t\t// new LinearInterp({\n\t\t\t\t\t// \ttargetObject: thisScene.getLayer(\"ConcernedApe_3\"),\n\t\t\t\t\t// \tpropertyName: \"alpha\",\n\t\t\t\t\t// \tstartValue: 1,\n\t\t\t\t\t// \tendValue: 0,\n\t\t\t\t\t// \tduration: 0.5\n\t\t\t\t\t// });\n\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Text\"),\n\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\tstartValue: 1,\n\t\t\t\t\t\tendValue: 0,\n\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t}\n\t\t],\n\t\tupdate : function() {\n\t\t\tlet thisPhase = ScenePhase.SPLASH;\n\t\t\twhile (thisPhase.nextEvent < thisPhase.timeLine.length && phaseTime > thisPhase.timeLine[thisPhase.nextEvent].time) {\n\t\t\t\tthisPhase.timeLine[thisPhase.nextEvent].execute();\n\t\t\t\t++thisPhase.nextEvent;\n\t\t\t}\n\t\t},\n\t\tinit : function() {\n\t\t\tAudioManager.stopMusic();\n\t\t\tAudioManager.stopAmbience();\n\t\t\t// AudioManager.playSound(a_splashSound, 1.0);\n\t\t\tScenePhase.SPLASH.nextEvent = 0;\n\t\t\t// thisScene.getLayer(\"ConcernedApe Closed Eyes\").alpha = 0;\n\t\t\t// thisScene.getLayer(\"ConcernedApe_2\").alpha = 0;\n\t\t\t// thisScene.getLayer(\"ConcernedApe_3\").alpha = 0;\n\t\t\t// thisScene.getLayer(\"ConcernedApe Text\").alpha = 0;\n\t\t\t// thisScene.getLayer(\"Splash whiteBG\").getEffect(0).getMaterial(0).multiply = 0;\n\t\t\t// thisScene.getLayer(\"html5-logo\").getEffect(0).getMaterial(0).alpha = 0;\n\t\t\t// thisScene.getLayer(\"html5-logo\").origin = new Vec3(1920, 1663.875, 0);\n\t\t\t// thisScene.getLayer(\"tech-intro-bg\").getEffect(0).getMaterial(0).alpha = 0;\n\t\t\t// thisScene.getLayer(\"tech-intro-bg\").origin = new Vec3(1920, 648, 0);\n\t\t\t// thisScene.getLayer(\"tech-intro-bg\").scale = new Vec3(6.761, 13.522, 0);\n\t\t\t// thisScene.getLayer(\"impact-logo\").getEffect(0).getMaterial(0).alpha = 0;\n\t\t\t// thisScene.getLayer(\"impact-logo\").origin = new Vec3(1920, 543.375, 0);\n\t\t\t// thisScene.getLayer(\"Splash blackBG\").getEffect(0).getMaterial(0).multiply = 0;\n\t\t},\n\t\tend : function() {\n\t\t},\n\t\texit : function() {\n\t\t\tnew LinearInterp({\n\t\t\t\ttargetObject: thisScene.getLayer(\"Splash White Fade\"),\n\t\t\t\tpropertyName: \"alpha\", \n\t\t\t\tstartValue: 1,\n\t\t\t\tendValue: 0,\n\t\t\t\tduration: 2\n\t\t\t});\n\t\t},\n\t\tget nextPhase() {return (show_intro ? ScenePhase.MAIN.INTRO : ScenePhase.MAIN)}\n\t},\n\n\n\n\tMAIN : {\n\t\tINTRO : {\n\t\t\tname : \"main.intro\",\n\t\t\tlength : 15.9,\n\t\t\ttimeLine : [\n\t\t\t\t{\n\t\t\t\t\ttime : 0.0,\n\t\t\t\t\texecute() {\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 6.0, // Start scrolling\n\t\t\t\t\texecute() {\n\t\t\t\t\tnew EaseInInterp({\n\t\t\t\t\t\ttargetObject: shared,\n\t\t\t\t\t\tpropertyName: \"viewportY\",\n\t\t\t\t\t\tstartValue: 0,\n\t\t\t\t\t\tendValue: 1000,\n\t\t\t\t\t\tduration: 9.9\n\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t],\n\t\t\tupdate : function() {\n\t\t\t\tlet thisPhase = ScenePhase.MAIN.INTRO;\n\t\t\t\twhile (thisPhase.nextEvent < thisPhase.timeLine.length && phaseTime > thisPhase.timeLine[thisPhase.nextEvent].time) {\n\t\t\t\t\tthisPhase.timeLine[thisPhase.nextEvent].execute();\n\t\t\t\t\t++thisPhase.nextEvent;\n\t\t\t\t}\n\t\t\t},\n\t\t\tinit : function() {\n\t\t\t\tif (!AudioManager.isMusicPlaying())\n\t\t\t\t\tAudioManager.startMusic();\n\t\t\t\tif (!AudioManager.isAmbiencePlaying())\n\t\t\t\t\tAudioManager.startAmbience();\n\t\t\t\tScenePhase.MAIN.INTRO.nextEvent = 0;\n\t\t\t},\n\t\t\tend : function() {},\n\t\t\texit : function() {},\n\t\t\tget nextPhase() {return ScenePhase.MAIN}\n\t\t},\n\n\n\n\t\tname : \"main\",\n\t\tget nextPhase() {return null},\n\t\tlength : 0.0,\n\t\tupdate : function() {\n\n\t\t},\n\t\tinit : function() {\n\t\t\tif (!AudioManager.isMusicPlaying())\n\t\t\t\tAudioManager.startMusic();\n\t\t\tif (!AudioManager.isAmbiencePlaying())\n\t\t\t\tAudioManager.startAmbience();\n\t\t\tScenePhase.MAIN.nextEvent = 0;\n\t\t},\n\t\tend : function() {},\n\t\texit : function() {}\n\t}\n}\nshared.ScenePhase = ScenePhase;\n\nclass SceneManager {\n\tstatic update() {\n\t\t// \n\t\tshared.timeNudge = 0;\n\t\t\n\t\tif (activePhase) {\n\t\t\t// Advance phase\n\t\t\tphaseTime += engine.frametime;\n\t\t\tif (phaseTime > activePhase.length && activePhase.nextPhase) {\n\t\t\t\tSceneManager.advancePhase();\n\t\t\t}\n\t\t\tif (activePhase.length !== 0)\n\t\t\t\tshared.phaseProgress = phaseTime / activePhase.length;\n\t\t\telse \n\t\t\t\tshared.phaseProgress = 0.0;\n\n\t\t\t// Update active phase\n\t\t\tif (typeof(activePhase.update) === \"function\")\n\t\t\t\tactivePhase.update();\n\t\t}\n\t}\n\t\n\tstatic get phase() {return activePhase}\n\n\tstatic get phaseTime() {return phaseTime}\n\n\tstatic advancePhase() {\n\t\tif (typeof(activePhase.end) === \"function\")\n\t\t\tactivePhase.end();\n\t\tSceneManager.setPhase(activePhase.nextPhase);\n\t}\n\n/** Initialize the currently active phase */\n\tstatic setPhase(newPhase, bInit = true) {\n\t\tif (activePhase && typeof(activePhase.exit) === \"function\")\n\t\t\tactivePhase.exit();\n\t\tactivePhase = newPhase;\n\t\tphaseTime = 0;\n\t\tif (bInit && typeof(activePhase.init) === \"function\")\n\t\t\tactivePhase.init();\n\t}\n}\nshared.SceneManager = SceneManager;\n\n\n\n/** Initialize in update instead of init, since we want to load user settings before we initialize */\nlet bFirstUpdate = true;\n/**\n * @param {Boolean} value (for property 'visible')\n */\nexport function update(value) {\n\tif (bFirstUpdate) {\n\t\tbFirstUpdate = false;\n\n\t\t// Set the initial phase in update(), as init() runs before we get user properties\n\t\tif (show_developer_splash)\n\t\t\tSceneManager.setPhase(ScenePhase.SPLASH);\n\t\telse if (show_intro)\n\t\t\tSceneManager.setPhase(ScenePhase.MAIN.INTRO);\n\t\telse\n\t\t\tSceneManager.setPhase(ScenePhase.MAIN);\n\t}\n\telse\n\t\tSceneManager.update();\n\n\treturn value;\n}\n\n\n\n/**\n * @param {Object} userProperties\n */\nexport function applyUserProperties(userProperties) {\n\tif (userProperties.show_intro !== undefined && userProperties.show_intro !== show_intro) {\n\t\tshow_intro = userProperties.show_intro;\n\t\t// Jump to intro when enabled\n\t\tif (!bFirstUpdate) {\n\t\t\tif (show_intro && SceneManager.phase === ScenePhase.MAIN)\n\t\t\t\tSceneManager.setPhase(ScenePhase.MAIN.INTRO);\n\t\t\t// else if (SceneManager.phase === ScenePhase.MAIN.INTRO)\n\t\t\t// \tSceneManager.advancePhase();\n\t\t}\n\t}\n\tif (userProperties.show_developer_splash !== undefined && userProperties.show_developer_splash !== show_developer_splash) {\n\t\tshow_developer_splash = userProperties.show_developer_splash;\n\t\t// Jump to splash screen when enabled\n\t\tif (!bFirstUpdate) {\n\t\t\tif (show_developer_splash && SceneManager.phase === ScenePhase.MAIN)\n\t\t\t\tSceneManager.setPhase(ScenePhase.SPLASH);\n\t\t\t// else if (SceneManager.phase === ScenePhase.SPLASH)\n\t\t\t// \tSceneManager.advancePhase();\n\t\t}\n\t}\n}\n\n\n/**\n * @param {ICursorEvent} event\n */\nexport function cursorClick(event) {\n\tswitch (activePhase) {\n\tcase ScenePhase.SPLASH:\n\t\t// shared.timeNudge = ScenePhase.SPLASH.length - phaseTime;\n\t\t// phaseTime = ScenePhase.SPLASH.length;\n\t\tbreak;\n\tcase ScenePhase.MAIN.INTRO:\n\t\t// if (phaseTime < 0.6) {\n\t\t// \tAudioManager.playSound(\"logo-instant-bling-quick.ogg\")\n\t\t// \tshared.timeNudge = 0.6 - phaseTime;\n\t\t// \tphaseTime = 0.6;\n\t\t// }\n\t\tbreak;\n\t}\n}\n",
-				"value" : false
-			}
-		},
-		{
-			"alignment" : "center",
-			"alpha" : 1.0,
-			"angles" : "0.00000 0.00000 0.00000",
-			"brightness" : 1.0,
-			"color" : "1.00000 1.00000 1.00000",
-			"colorBlendMode" : 0,
-			"copybackground" : true,
-			"id" : 15,
-			"image" : "models/util/solidlayer.json",
-			"ledsource" : false,
-			"locktransforms" : true,
-			"name" : "Shared logic (unused)",
-			"origin" : "960.00000 540.00000 0.00000",
-			"parallaxDepth" : "1.00000 1.00000",
-			"perspective" : false,
-			"scale" : "1.00000 1.00000 1.00000",
-			"size" : "0.00000 0.00000",
-			"solid" : true,
-			"visible" : 
-			{
-				"script" : "'use strict';\n\nshared.canvasToScreen = undefined;\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tshared.canvasToScreen = new Vec2(engine.canvasSize.x / engine.screenResolution.x, engine.canvasSize.y / engine.screenResolution.y);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tshared.canvasToScreen = new Vec2(engine.canvasSize.x / engine.screenResolution.x, engine.canvasSize.y / engine.screenResolution.y);\n}\n\n\n\n\n\n// shared.viewportY = 0;\n// let viewportDY = 0.01;\n\n// export function init() {\n// }\n\n\n// export function update() {\n// \tshared.viewportY += viewportDY;\n// \tif (viewportDY > 0.0)\n// \t\tviewportDY += 3.0/500.0;\n// \tif (shared.viewportY > 1000.0) {\n// \t\tif (viewportDY != 0.0) {\n// \t\t\t// stuff\n// \t\t}\n// \t\tviewportDY = 0.0;\n// \t}\n\t\t\n// }",
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\nconst AudioManager = shared.AudioManager;\nconst LinearInterp = shared.LinearInterp;\nconst EaseOutInterp = shared.EaseOutInterp;\nconst EaseOutStrongInterp = shared.EaseOutStrongInterp;\nconst EaseInInterp = shared.EaseInInterp;\nconst EaseInOutInterp = shared.EaseInOutInterp;\nconst LayerParenting = shared.LayerParenting;\n\nlet show_developer_splash = undefined;\nlet show_intro = undefined;\nshared.timeNudge = 0;\nshared.viewportY = 0;\n\n\n// Register audio\nlet a_mouseClick = engine.registerAsset(\"sounds/mouseclick.ogg\");\nlet a_cowboyGunshot = engine.registerAsset(\"sounds/Cowboy_gunshot.ogg\");\n\n\n// \"Private variables\"\nlet activePhase = undefined;\nlet phaseTime = 0.0;\nlet phaseProgress = 0.0;\n\n\nconst ScenePhase = {\n\tSPLASH : {\n\t\tname : \"splash\",\n\t\tlength : 7.0,\n\t\ttimeLine : [\n\t\t\t{\n\t\t\t\ttime : 0,\n\t\t\t\texecute() {\n\t\t\t\t\tif (Math.random() < 0.5) {\n\t\t\t\t\t\tthisScene.getLayer(\"ConcernedApe Closed Eyes\").visible = true;\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Closed Eyes\"),\n\t\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\t\tstartValue: 0,\n\t\t\t\t\t\t\tendValue: 1,\n\t\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t\t});\n\t\t\t\t\t\tthisScene.getLayer(\"ConcernedApe Sunglasses\").visible = false;\n\t\t\t\t\t}\n\t\t\t\t\telse {\n\t\t\t\t\t\tthisScene.getLayer(\"ConcernedApe Sunglasses\").visible = true;\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Sunglasses\"),\n\t\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\t\tstartValue: 0,\n\t\t\t\t\t\t\tendValue: 1,\n\t\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t\t});\n\t\t\t\t\t\tthisScene.getLayer(\"ConcernedApe Closed Eyes\").visible = false;\n\t\t\t\t\t}\n\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Text\"),\n\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\tstartValue: 0,\n\t\t\t\t\t\tendValue: 1,\n\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 1,\n\t\t\t\texecute() {\tAudioManager.playSound(a_mouseClick, 1); }\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 2.5,\n\t\t\t\texecute() {\tAudioManager.playSound(a_mouseClick, 1); }\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 3,\n\t\t\t\texecute() {\tAudioManager.playSound(a_mouseClick, 1); }\n\t\t\t},\n\t\t\t{\n\t\t\t\ttime: 5,\n\t\t\t\texecute() {\n\t\t\t\t\tif (thisScene.getLayer(\"ConcernedApe Closed Eyes\").visible === true) {\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Closed Eyes\"),\n\t\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\t\tstartValue: 1,\n\t\t\t\t\t\t\tendValue: 0,\n\t\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t\telse if(thisScene.getLayer(\"ConcernedApe Sunglasses\").visible === true) {\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Sunglasses\"),\n\t\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\t\tstartValue: 1,\n\t\t\t\t\t\t\tendValue: 0,\n\t\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"ConcernedApe Text\"),\n\t\t\t\t\t\tpropertyName: \"alpha\",\n\t\t\t\t\t\tstartValue: 1,\n\t\t\t\t\t\tendValue: 0,\n\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t});\n\t\t\t\t}\n\t\t\t}\n\t\t],\n\t\tupdate : function() {\n\t\t\tconst thisPhase = ScenePhase.SPLASH;\n\t\t\twhile (thisPhase.nextEvent < thisPhase.timeLine.length && phaseTime > thisPhase.timeLine[thisPhase.nextEvent].time) {\n\t\t\t\tthisPhase.timeLine[thisPhase.nextEvent].execute();\n\t\t\t\t++thisPhase.nextEvent;\n\t\t\t}\n\t\t},\n\t\tinit : function() {\n\t\t\tAudioManager.stopMusic();\n\t\t\tAudioManager.stopAmbience();\n\t\t\tScenePhase.SPLASH.nextEvent = 0;\n\n\t\t\tthisScene.getLayer(\"ConcernedApe Text\").visible = true;\n\t\t\tthisScene.getLayer(\"Splash White Fade\").visible = true;\n\t\t},\n\t\tend : function() {\n\t\t},\n\t\texit : function() {\n\t\t\tnew LinearInterp({\n\t\t\t\ttargetObject: thisScene.getLayer(\"Splash White Fade\"),\n\t\t\t\tpropertyName: \"alpha\", \n\t\t\t\tstartValue: 1,\n\t\t\t\tendValue: 0,\n\t\t\t\tduration: 2\n\t\t\t});\n\n\t\t\tthisScene.getLayer(\"ConcernedApe Closed Eyes\").alpha = 0;\n\t\t\tthisScene.getLayer(\"ConcernedApe Sunglasses\").alpha = 0;\n\t\t\t// thisScene.getLayer(\"ConcernedApe_3\").alpha = 0;\n\t\t\tthisScene.getLayer(\"ConcernedApe Text\").alpha = 0;\n\t\t},\n\t\tget nextPhase() {return (show_intro ? ScenePhase.MAIN.INTRO : ScenePhase.MAIN)}\n\t},\n\n\n\n\tMAIN : {\n\t\tINTRO : {\n\t\t\tname : \"main.intro\",\n\t\t\tlength : 16.9,\n\t\t\ttimeLine : [\n\t\t\t\t{\n\t\t\t\t\ttime : 0.0,\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"Bird\"),\n\t\t\t\t\t\t\tpropertyName: \"origin\",\n\t\t\t\t\t\t\tstartValue: new Vec3(shared.screenBoundsX.y - 210 * shared.canvasToScreen, shared.screenBoundsY.x + 390 * shared.canvasToScreen),\n\t\t\t\t\t\t\tendOffset: new Vec3(-6000 * shared.canvasToScreen, 0, 0),\n\t\t\t\t\t\t\tduration: 100.0\n\t\t\t\t\t\t});\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"Bird 2\"),\n\t\t\t\t\t\t\tpropertyName: \"origin\",\n\t\t\t\t\t\t\tstartValue: new Vec3(shared.screenBoundsX.y - 120 * shared.canvasToScreen, shared.screenBoundsY.x + 360 * shared.canvasToScreen),\n\t\t\t\t\t\t\tendOffset: new Vec3(-6000 * shared.canvasToScreen, 0, 0),\n\t\t\t\t\t\t\tduration: 100.0\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 6.0, // Start scrolling\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tnew EaseInInterp({\n\t\t\t\t\t\t\ttargetObject: shared,\n\t\t\t\t\t\t\tpropertyName: \"viewportY\",\n\t\t\t\t\t\t\tstartValue: 0,\n\t\t\t\t\t\t\tendValue: 1000,\n\t\t\t\t\t\t\tduration: 9.9\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 15.9, // Logo grow\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"TitleCard\"),\n\t\t\t\t\t\t\tpropertyName: \"scale\",\n\t\t\t\t\t\t\tendValue: new Vec3((shared.zoom + 0.05) * shared.canvasToScreen),\n\t\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 16.1,\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tthisScene.getLayer(\"Title_New\").visible = true;\n\t\t\t\t\t\tAudioManager.playSound(a_cowboyGunshot);\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 16.3,\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tthisScene.getLayer(\"Title_Load\").visible = true;\n\t\t\t\t\t\tAudioManager.playSound(a_cowboyGunshot);\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 16.4, // Logo shrink\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tnew LinearInterp({\n\t\t\t\t\t\t\ttargetObject: thisScene.getLayer(\"TitleCard\"),\n\t\t\t\t\t\t\tpropertyName: \"scale\",\n\t\t\t\t\t\t\tendValue: new Vec3(shared.zoom * shared.canvasToScreen),\n\t\t\t\t\t\t\tduration: 0.5\n\t\t\t\t\t\t});\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 16.5,\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tthisScene.getLayer(\"Title_Coop\").visible = true;\n\t\t\t\t\t\tAudioManager.playSound(a_cowboyGunshot);\n\t\t\t\t\t}\n\t\t\t\t},\n\t\t\t\t{\n\t\t\t\t\ttime : 16.7,\n\t\t\t\t\texecute() {\n\t\t\t\t\t\tthisScene.getLayer(\"Title_Exit\").visible = true;\n\t\t\t\t\t\tAudioManager.playSound(a_cowboyGunshot);\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t],\n\t\t\tupdate : function() {\n\t\t\t\tconst thisPhase = ScenePhase.MAIN.INTRO;\n\t\t\t\twhile (thisPhase.nextEvent < thisPhase.timeLine.length && phaseTime > thisPhase.timeLine[thisPhase.nextEvent].time) {\n\t\t\t\t\tthisPhase.timeLine[thisPhase.nextEvent].execute();\n\t\t\t\t\t++thisPhase.nextEvent;\n\t\t\t\t}\n\t\t\t},\n\t\t\tinit : function() {\n\t\t\t\tif (!AudioManager.isMusicPlaying())\n\t\t\t\t\tAudioManager.startMusic();\n\t\t\t\tif (!AudioManager.isAmbiencePlaying())\n\t\t\t\t\tAudioManager.startAmbience();\n\t\t\t\tScenePhase.MAIN.INTRO.nextEvent = 0;\n\n\t\t\t\tthisScene.getLayer(\"Title_New\").visible = false;\n\t\t\t\tthisScene.getLayer(\"Title_Load\").visible = false;\n\t\t\t\tthisScene.getLayer(\"Title_Coop\").visible = false;\n\t\t\t\tthisScene.getLayer(\"Title_Exit\").visible = false;\n\t\t\t},\n\t\t\tend : function() {},\n\t\t\texit : function() {},\n\t\t\tget nextPhase() {return ScenePhase.MAIN}\n\t\t},\n\n\n\n\t\tname : \"main\",\n\t\tget nextPhase() {return null},\n\t\tlength : 0.0,\n\t\tupdate : function() {\n\n\t\t},\n\t\tinit : function() {\n\t\t\tif (!AudioManager.isMusicPlaying())\n\t\t\t\tAudioManager.startMusic();\n\t\t\tif (!AudioManager.isAmbiencePlaying())\n\t\t\t\tAudioManager.startAmbience();\n\t\t\tScenePhase.MAIN.nextEvent = 0;\n\t\t},\n\t\tend : function() {},\n\t\texit : function() {}\n\t}\n}\nshared.ScenePhase = ScenePhase;\n\nclass SceneManager {\n\tstatic update() {\n\t\t// \n\t\tshared.timeNudge = 0;\n\t\t\n\t\tif (activePhase) {\n\t\t\t// Advance phase\n\t\t\tphaseTime += engine.frametime;\n\t\t\tif (phaseTime > activePhase.length && activePhase.nextPhase) {\n\t\t\t\tSceneManager.advancePhase();\n\t\t\t}\n\t\t\tif (activePhase.length !== 0)\n\t\t\t\tshared.phaseProgress = phaseTime / activePhase.length;\n\t\t\telse \n\t\t\t\tshared.phaseProgress = 0.0;\n\n\t\t\t// Update active phase\n\t\t\tif (typeof(activePhase.update) === \"function\")\n\t\t\t\tactivePhase.update();\n\t\t}\n\t}\n\t\n\tstatic get phase() {return activePhase}\n\n\tstatic get phaseTime() {return phaseTime}\n\n\tstatic advancePhase() {\n\t\tif (typeof(activePhase.end) === \"function\")\n\t\t\tactivePhase.end();\n\t\tSceneManager.setPhase(activePhase.nextPhase);\n\t}\n\n/** Initialize the currently active phase */\n\tstatic setPhase(newPhase, bInit = true) {\n\t\tif (activePhase && typeof(activePhase.exit) === \"function\")\n\t\t\tactivePhase.exit();\n\t\tactivePhase = newPhase;\n\t\tphaseTime = 0;\n\t\tif (bInit && typeof(activePhase.init) === \"function\")\n\t\t\tactivePhase.init();\n\t}\n\n\tstatic skipPressed() {\n\t\tswitch (activePhase) {\n\t\tcase ScenePhase.SPLASH:\n\t\t\tshared.timeNudge = ScenePhase.SPLASH.length - phaseTime;\n\t\t\tphaseTime = ScenePhase.SPLASH.length;\n\t\t\tbreak;\n\t\tcase ScenePhase.MAIN.INTRO:\n\t\t\tshared.timeNudge = ScenePhase.MAIN.INTRO.length - phaseTime;\n\t\t\tphaseTime = ScenePhase.MAIN.INTRO.length;\n\t\t\tbreak;\n\t\t}\n\t}\n}\nshared.SceneManager = SceneManager;\n\n\n\n/** Initialize in update instead of init, since we want to load user settings before we initialize */\nlet bFirstUpdate = true;\n/**\n * @param {Boolean} value (for property 'visible')\n */\nexport function update(value) {\n\tif (bFirstUpdate) {\n\t\tbFirstUpdate = false;\n\n\t\t// Set the initial phase in update(), as init() runs before we get user properties\n\t\tif (show_developer_splash)\n\t\t\tSceneManager.setPhase(ScenePhase.SPLASH);\n\t\telse if (show_intro)\n\t\t\tSceneManager.setPhase(ScenePhase.MAIN.INTRO);\n\t\telse\n\t\t\tSceneManager.setPhase(ScenePhase.MAIN);\n\t}\n\telse\n\t\tSceneManager.update();\n\n\treturn value;\n}\n\n\n\n/**\n * @param {Object} userProperties\n */\nexport function applyUserProperties(userProperties) {\n\tif (userProperties.show_intro !== undefined && userProperties.show_intro !== show_intro) {\n\t\tshow_intro = userProperties.show_intro;\n\t\t// Jump to intro when enabled\n\t\tif (!bFirstUpdate) {\n\t\t\tif (show_intro && SceneManager.phase === ScenePhase.MAIN)\n\t\t\t\tSceneManager.setPhase(ScenePhase.MAIN.INTRO);\n\t\t\t// else if (SceneManager.phase === ScenePhase.MAIN.INTRO)\n\t\t\t// \tSceneManager.advancePhase();\n\t\t}\n\t}\n\tif (userProperties.show_developer_splash !== undefined && userProperties.show_developer_splash !== show_developer_splash) {\n\t\tshow_developer_splash = userProperties.show_developer_splash;\n\t\t// Jump to splash screen when enabled\n\t\tif (!bFirstUpdate) {\n\t\t\tif (show_developer_splash && SceneManager.phase === ScenePhase.MAIN)\n\t\t\t\tSceneManager.setPhase(ScenePhase.SPLASH);\n\t\t\t// else if (SceneManager.phase === ScenePhase.SPLASH)\n\t\t\t// \tSceneManager.advancePhase();\n\t\t}\n\t}\n}\n\n\n/**\n * @param {ICursorEvent} event\n */\nexport function cursorClick(event) {\n\tswitch (activePhase) {\n\tcase ScenePhase.SPLASH:\n\t\t// shared.timeNudge = ScenePhase.SPLASH.length - phaseTime;\n\t\t// phaseTime = ScenePhase.SPLASH.length;\n\t\tbreak;\n\tcase ScenePhase.MAIN.INTRO:\n\t\t// if (phaseTime < 0.6) {\n\t\t// \tAudioManager.playSound(\"logo-instant-bling-quick.ogg\")\n\t\t// \tshared.timeNudge = 0.6 - phaseTime;\n\t\t// \tphaseTime = 0.6;\n\t\t// }\n\t\tbreak;\n\t}\n}\n",
 				"value" : false
 			}
 		},
@@ -256,14 +256,14 @@
 			"name" : "Sky",
 			"origin" : 
 			{
-				"script" : "'use strict';\n\nlet canvasToScreen = undefined;\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tcanvasToScreen = new Vec2(engine.canvasSize.x / engine.screenResolution.x, engine.canvasSize.y / engine.screenResolution.y);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tcanvasToScreen = new Vec2(engine.canvasSize.x / size.x, engine.canvasSize.y / size.y);\n}\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(0, Math.floor(900 - shared.viewportY * 0.66) * canvasToScreen.y + engine.canvasSize.y, 0);\n}\n",
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(0, shared.screenBoundsY.y + Math.floor(900 - shared.viewportY * 0.66) * shared.canvasToScreen, 0);\n}\n",
 				"value" : "0.00000 1980.00000 0.00000"
 			},
 			"parallaxDepth" : "1.00000 1.00000",
 			"perspective" : false,
 			"scale" : 
 			{
-				"script" : "'use strict';\n\nexport function init(value) {\n\tupdateScale();\n}\nexport function resizeScreen(size) {\n\tupdateScale();\n}\n\nfunction updateScale() {\n\tthisLayer.scale = new Vec3(engine.canvasSize.x, ((900 - 360) * shared.canvasToScreen.y + engine.canvasSize.y) / 264, 1);\n}\n",
+				"script" : "'use strict';\n\nexport function init(value) {\n\tresizeScreen();\n}\nexport function resizeScreen() {\n\tthisLayer.scale = new Vec3(engine.canvasSize.x, ((900 - 360) * shared.canvasToScreen + shared.screenBoundsY.y) / 264, 1);\n}",
 				"value" : "1920.00000 6.13630 1.00000"
 			},
 			"size" : "1.00000 264.00000",
@@ -317,17 +317,17 @@
 			"image" : "models/Hills2.json",
 			"ledsource" : false,
 			"locktransforms" : false,
-			"name" : "Background Hills 1",
+			"name" : "Background Hills",
 			"origin" : 
 			{
-				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(-90 * shared.canvasToScreen.x, (30 - shared.viewportY * 0.66) * shared.canvasToScreen.y, 0);\n}",
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(shared.screenBoundsX.x - 90 * shared.canvasToScreen, shared.screenBoundsY.x + (30 - shared.viewportY * 0.66) * shared.canvasToScreen, 0);\n}",
 				"value" : "-90.00000 30.00000 0.00000"
 			},
 			"parallaxDepth" : "1.00000 1.00000",
 			"perspective" : false,
 			"scale" : 
 			{
-				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tthisLayer.scale = new Vec3(5 * 3 * 1920 / engine.screenResolution.x, 3 * 1080 / engine.screenResolution.y, 1);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(5 * 3 * 1920 / engine.screenResolution.x, 3 * 1080 / engine.screenResolution.y, 1);\n}\n",
+				"script" : "'use strict';\n\nexport function init() {\n\tresizeScreen();\n}\n\nexport function resizeScreen() {\n\tthisLayer.scale = new Vec3(5 * 3 * shared.canvasToScreen, 3 * shared.canvasToScreen, 1);\n}\n",
 				"value" : "15.00000 3.00000 3.00000"
 			},
 			"size" : "639.00000 148.00000",
@@ -335,29 +335,29 @@
 			"visible" : true
 		},
 		{
-			"alignment" : "topleft",
+			"alignment" : "center",
 			"alpha" : 1.0,
 			"angles" : "0.00000 0.00000 0.00000",
 			"brightness" : 1.0,
 			"color" : "1.00000 1.00000 1.00000",
 			"colorBlendMode" : 0,
 			"copybackground" : true,
-			"id" : 92,
-			"image" : "models/Hills2.json",
+			"id" : 194,
+			"image" : "models/util/solidlayer.json",
 			"ledsource" : false,
-			"locktransforms" : false,
-			"name" : "Background Hills 2",
-			"origin" : 
-			{
-				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(1827, 474 - shared.viewportY * 0.66, 0);\n}\n",
-				"value" : "1827.00000 474.00000 0.00000"
-			},
+			"locktransforms" : true,
+			"name" : "Small Clouds (script)",
+			"origin" : "960.00000 540.00000 0.00000",
 			"parallaxDepth" : "1.00000 1.00000",
 			"perspective" : false,
-			"scale" : "3.00000 3.00000 3.00000",
-			"size" : "639.00000 148.00000",
+			"scale" : "1.00000 1.00000 1.00000",
+			"size" : "0.00000 0.00000",
 			"solid" : true,
-			"visible" : false
+			"visible" : 
+			{
+				"script" : "'use strict';\nlet Helpers = shared.OMGHelpers;\n\n/** \n * Array containing the small cloud image layers.\n * @type ILayer[] \n */\nlet clouds = [];\n/**\n * The maximum number of clouds we will spawn. Can vary based on the screen resolution.\n */\nlet maxClouds = undefined;\n\n/** How quickly the clouds move across the screen. */\nlet cloudSpeed = -18;\n\n/** The width of the largest cloud. Used to determine when clouds fall off-screen and despawn. */\nlet cloudWidth = 447;\n\nlet a_cloud1 = engine.registerAsset(\"models/SmallCloud1.json\");\nlet a_cloud2 = engine.registerAsset(\"models/SmallCloud2.json\");\nlet a_cloud3 = engine.registerAsset(\"models/SmallCloud3.json\");\n\n/**\n *  Creates a small cloud at the specified position.\n * @param {number} position - The initial x coordinate of the cloud\n * @return {ILayer} - The newly created cloud layer.\n */\nfunction createCloud(position) {\n\tlet imagePath = undefined;\n\tlet newLayer = undefined;\n\tswitch (Math.floor(Math.random() * 3)) {\n\t\tcase 0:\n\t\t\timagePath = \"models/SmallCloud1.json\";\n\t\t\tbreak;\n\t\tcase 1:\n\t\t\timagePath = \"models/SmallCloud2.json\";\n\t\t\tbreak;\n\t\tcase 2:\n\t\tdefault:\n\t\t\timagePath = \"models/SmallCloud3.json\";\n\t\t\tbreak;\n\t}\n\tclouds.push(newLayer = thisScene.createLayer({\n\t\timage : imagePath,\n\t\tname : \"SmallCloud1\",\n\t\tscale : new Vec3(3 * shared.canvasToScreen),\n\t\torigin : new Vec3(\n\t\t\tposition,\n\t\t\t900 * shared.canvasToScreen + Math.random() * (shared.screenBoundsY.y - shared.screenBoundsY.x) * 0.5,\n\t\t\t0)\n\t}));\n\tthisScene.sortLayer(newLayer, thisScene.getLayerIndex(thisLayer));\n\tnewLayer.height = newLayer.origin.y;\n\treturn \n}\n\nexport function init() {\n\tresizeScreen();\n\n\tfor (let i = 0; i < maxClouds; ++i)\n\t\tcreateCloud(Math.random() * (shared.screenBoundsX.y - shared.screenBoundsX.x + cloudWidth * shared.canvasToScreen) - cloudWidth * 0.5 * shared.canvasToScreen);\n}\n\nexport function resizeScreen() {\n\tmaxClouds = Math.floor(engine.screenResolution.x * engine.screenResolution.y / 120000);\n\n\tfor (let cloud of clouds)\n\t\tcloud.scale = new Vec3(3 * shared.canvasToScreen);\n}\n\n\nexport function update() {\n\tfor (let i in clouds) {\n\t\tlet cloud = clouds[i];\n\t\tcloud.origin = new Vec3(cloud.origin.x + cloudSpeed * engine.frametime, cloud.height - shared.viewportY * 0.5, cloud.origin.z);\n\t\tif (cloud.origin.x < shared.screenBoundsX.x - cloudWidth * 0.5 * shared.canvasToScreen) {\n\t\t\tthisScene.destroyLayer(cloud);\n\t\t\tclouds.splice(i, 1);\n\t\t}\n\t}\n\twhile (clouds.length < maxClouds)\n\t\tcreateCloud(shared.screenBoundsX.y + cloudWidth * 0.5 * shared.canvasToScreen);\n}\n",
+				"value" : false
+			}
 		},
 		{
 			"alignment" : "bottomleft",
@@ -397,47 +397,22 @@
 			"image" : "models/Hills1.json",
 			"ledsource" : false,
 			"locktransforms" : false,
-			"name" : "Foreground Hills 1",
+			"name" : "Foreground Hills",
 			"origin" : 
 			{
-				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(0, (0 - shared.viewportY) * shared.canvasToScreen.y, 0);\n}",
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(shared.screenBoundsX.x, shared.screenBoundsY.x - shared.viewportY * shared.canvasToScreen, 0);\n}",
 				"value" : "0.00000 0.00000 0.00000"
 			},
 			"parallaxDepth" : "1.00000 1.00000",
 			"perspective" : false,
 			"scale" : 
 			{
-				"script" : "'use strict';\n\nfunction updateScale() {\n\tthisLayer.scale = new Vec3(5 * 3 * shared.canvasToScreen.x, 3 * shared.canvasToScreen.y, 1);\n}\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tupdateScale();\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tupdateScale();\n}\n",
+				"script" : "'use strict';\n\nexport function init() {\n\tresizeScreen();\n}\n\nexport function resizeScreen() {\n\tthisLayer.scale = new Vec3(5 * 3 * shared.canvasToScreen, 3 * shared.canvasToScreen, 1);\n}\n",
 				"value" : "15.00000 3.00000 3.00000"
 			},
 			"size" : "639.00000 148.00000",
 			"solid" : true,
 			"visible" : true
-		},
-		{
-			"alignment" : "topleft",
-			"alpha" : 1.0,
-			"angles" : "0.00000 0.00000 0.00000",
-			"brightness" : 1.0,
-			"color" : "1.00000 1.00000 1.00000",
-			"colorBlendMode" : 0,
-			"copybackground" : true,
-			"id" : 90,
-			"image" : "models/Hills1.json",
-			"ledsource" : false,
-			"locktransforms" : false,
-			"name" : "Foreground Hills 2",
-			"origin" : 
-			{
-				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(1917, 444 - shared.viewportY, 0);\n}\n",
-				"value" : "1917.00000 444.00000 0.00000"
-			},
-			"parallaxDepth" : "1.00000 1.00000",
-			"perspective" : false,
-			"scale" : "3.00000 3.00000 3.00000",
-			"size" : "639.00000 148.00000",
-			"solid" : true,
-			"visible" : false
 		},
 		{
 			"alignment" : "bottomleft",
@@ -454,14 +429,14 @@
 			"name" : "Leaves_Left",
 			"origin" : 
 			{
-				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(0, -shared.viewportY * 2, 0);\n}\n",
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(shared.screenBoundsX.x, shared.screenBoundsY.x - shared.viewportY * 2, 0);\n}\n",
 				"value" : "0.00000 0.00000 0.00000"
 			},
 			"parallaxDepth" : "1.00000 1.00000",
 			"perspective" : false,
 			"scale" : 
 			{
-				"script" : "'use strict';\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tthisLayer.scale = new Vec3(3 * 1920 / engine.screenResolution.x, 3 * 1080 / engine.screenResolution.y, 1);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * 1920 / engine.screenResolution.x, 3 * 1080 / engine.screenResolution.y, 1);\n}\n",
+				"script" : "'use strict';\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tresizeScreen();\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen);\n}\n",
 				"value" : "3.00000 3.00000 3.00000"
 			},
 			"size" : "164.00000 142.00000",
@@ -483,17 +458,216 @@
 			"name" : "Leaves_Right",
 			"origin" : 
 			{
-				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(engine.canvasSize.x, -shared.viewportY * 2, 0);\n}\n",
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(shared.screenBoundsX.y, shared.screenBoundsY.x - shared.viewportY * 2, 0);\n}\n",
 				"value" : "1920.00000 0.00000 0.00000"
 			},
 			"parallaxDepth" : "1.00000 1.00000",
 			"perspective" : false,
 			"scale" : 
 			{
-				"script" : "'use strict';\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tthisLayer.scale = new Vec3(3 * 1920 / engine.screenResolution.x, 3 * 1080 / engine.screenResolution.y, 1);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * 1920 / engine.screenResolution.x, 3 * 1080 / engine.screenResolution.y, 1);\n}\n",
+				"script" : "'use strict';\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tresizeScreen();\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen);\n}\n",
 				"value" : "3.00000 3.00000 3.00000"
 			},
 			"size" : "122.00000 153.00000",
+			"solid" : true,
+			"visible" : true
+		},
+		{
+			"alignment" : "center",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 178,
+			"image" : "models/Bird.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Bird",
+			"origin" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(value.x, shared.screenBoundsY.x + 390 - shared.viewportY * 2.0, value.z);\n}\n",
+				"value" : "1710.00000 390.00000 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : "3.00000 3.00000 3.00000",
+			"size" : "26.00000 26.00000",
+			"solid" : true,
+			"visible" : true
+		},
+		{
+			"alignment" : "center",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 183,
+			"image" : "models/Bird.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Bird 2",
+			"origin" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\treturn new Vec3(value.x, shared.screenBoundsY.x + 360 - shared.viewportY * 2.0, value.z);\n}\n",
+				"value" : "1820.00000 360.00000 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : "3.00000 3.00000 3.00000",
+			"size" : "26.00000 26.00000",
+			"solid" : true,
+			"visible" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Boolean} value - for property 'visible'\n * @return {Boolean} - update current property value\n */\nexport function init(value) {\n\tthisLayer.getTextureAnimation().setFrame(1);\n}\n",
+				"value" : true
+			}
+		},
+		{
+			"alignment" : "center",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 76,
+			"image" : "models/TitleCard.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "TitleCard",
+			"origin" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\tlet x = shared.globalXOffset * shared.canvasToScreen + engine.canvasSize.x / 2.0;\n\tlet y = shared.screenBoundsY.y + ((300 * shared.zoom) - shared.viewportY / 3.0 * shared.zoom - (93 * shared.zoom)) * shared.canvasToScreen;\n\n\treturn new Vec3(x, y, 0);\n}\n",
+				"value" : "960.00000 827.26440 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tthisLayer.scale = new Vec3(shared.zoom * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(shared.zoom * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tthisLayer.scale = new Vec3(shared.zoom * shared.canvasToScreen * shared.ui_scale);\n}\n",
+				"value" : "2.00000 2.00000 2.00000"
+			},
+			"size" : "400.00000 187.00000",
+			"solid" : true,
+			"visible" : true
+		},
+		{
+			"alignment" : "topleft",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 153,
+			"image" : "models/Title_New.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Title_New",
+			"origin" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\tlet buttonWidth = thisLayer.size.x * thisLayer.scale.x;\n\tlet buttonHeight = thisLayer.size.y * thisLayer.scale.y;\n\tlet numButtons = 4;\n\tlet spacing = 24;\n\n\tlet x = engine.canvasSize.x / 2.0;\n\tx -= buttonWidth * numButtons / 2;\n\tx -= spacing * (numButtons - 1) * shared.canvasToScreen / 2;\n\tx += 0 * (buttonWidth + spacing * shared.canvasToScreen);\n\tlet y = shared.screenBoundsY.x + (buttonHeight + 24 * shared.canvasToScreen);\n\n\treturn new Vec3(x, y, 0);\n}\n",
+				"value" : "493.51489 231.23755 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tresizeScreen();\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tresizeScreen();\n}\n",
+				"value" : "3.00000 3.00000 3.00000"
+			},
+			"size" : "74.00000 58.00000",
+			"solid" : true,
+			"visible" : true
+		},
+		{
+			"alignment" : "topleft",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 156,
+			"image" : "models/Title_Load.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Title_Load",
+			"origin" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\tlet buttonWidth = thisLayer.size.x * thisLayer.scale.x;\n\tlet buttonHeight = thisLayer.size.y * thisLayer.scale.y;\n\tlet numButtons = 4;\n\tlet spacing = 24;\n\n\tlet x = engine.canvasSize.x / 2.0;\n\tx -= buttonWidth * numButtons / 2;\n\tx -= spacing * (numButtons - 1) * shared.canvasToScreen / 2;\n\tx += 1 * (buttonWidth + spacing * shared.canvasToScreen);\n\tlet y = shared.screenBoundsY.x + (buttonHeight + 24 * shared.canvasToScreen);\n\n\treturn new Vec3(x, y, 0);\n}\n",
+				"value" : "731.43555 229.90094 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tresizeScreen();\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tresizeScreen();\n}\n",
+				"value" : "3.00000 3.00000 3.00000"
+			},
+			"size" : "74.00000 58.00000",
+			"solid" : true,
+			"visible" : true
+		},
+		{
+			"alignment" : "topleft",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 164,
+			"image" : "models/Title_Coop.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Title_Coop",
+			"origin" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\tlet buttonWidth = thisLayer.size.x * thisLayer.scale.x;\n\tlet buttonHeight = thisLayer.size.y * thisLayer.scale.y;\n\tlet numButtons = 4;\n\tlet spacing = 24;\n\n\tlet x = engine.canvasSize.x / 2.0;\n\tx -= buttonWidth * numButtons / 2;\n\tx -= spacing * (numButtons - 1) * shared.canvasToScreen / 2;\n\tx += 2 * (buttonWidth + spacing * shared.canvasToScreen);\n\tlet y = shared.screenBoundsY.x + (buttonHeight + 24 * shared.canvasToScreen);\n\n\treturn new Vec3(x, y, 0);\n}\n",
+				"value" : "969.35651 231.23767 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tresizeScreen();\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tresizeScreen();\n}\n",
+				"value" : "3.00000 3.00000 3.00000"
+			},
+			"size" : "74.00000 58.00000",
+			"solid" : true,
+			"visible" : true
+		},
+		{
+			"alignment" : "topleft",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 170,
+			"image" : "models/Title_Exit.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Title_Exit",
+			"origin" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\tlet buttonWidth = thisLayer.size.x * thisLayer.scale.x;\n\tlet buttonHeight = thisLayer.size.y * thisLayer.scale.y;\n\tlet numButtons = 4;\n\tlet spacing = 24;\n\n\tlet x = engine.canvasSize.x / 2.0;\n\tx -= buttonWidth * numButtons / 2;\n\tx -= spacing * (numButtons - 1) * shared.canvasToScreen / 2;\n\tx += 3 * (buttonWidth + spacing * shared.canvasToScreen);\n\tlet y = shared.screenBoundsY.x + (buttonHeight + 24 * shared.canvasToScreen);\n\n\treturn new Vec3(x, y, 0);\n}\n",
+				"value" : "1205.29211 232.78934 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tresizeScreen();\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tresizeScreen();\n}\n",
+				"value" : "3.00000 3.00000 3.00000"
+			},
+			"size" : "74.00000 58.00000",
 			"solid" : true,
 			"visible" : true
 		},
@@ -516,7 +690,7 @@
 			"scale" : "1.00000 1.00000 1.00000",
 			"size" : "1920.00000 1080.00000",
 			"solid" : true,
-			"visible" : true
+			"visible" : false
 		},
 		{
 			"alignment" : "right",
@@ -531,21 +705,42 @@
 			"ledsource" : false,
 			"locktransforms" : false,
 			"name" : "ConcernedApe Closed Eyes",
-			"origin" : 
-			{
-				"script" : "'use strict';\n\nfunction updatePosition(size) {\n\tthisLayer.origin = new Vec3(size.x / 2 - 5, size.y / 2, 0);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tupdatePosition(size);\n}\n\n/**\n * @param {Vec3} value - for property 'origin'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tupdatePosition(engine.canvasSize);\n}\n",
-				"value" : "955.00000 540.00000 0.00000"
-			},
+			"origin" : "955.00000 540.00000 0.00000",
 			"parallaxDepth" : "1.00000 1.00000",
 			"perspective" : false,
 			"scale" : 
 			{
-				"script" : "'use strict';\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tif (changedUserProperties.ui_scale !== undefined) {\n\t\tthisLayer.scale = new Vec3(3 * 1920 / engine.screenResolution.x * changedUserProperties.ui_scale, 3 * 1080 / engine.screenResolution.y * changedUserProperties.ui_scale, 1);\n\t}\n}\n",
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n",
 				"value" : "3.00000 3.00000 3.00000"
 			},
 			"size" : "85.00000 69.00000",
 			"solid" : true,
-			"visible" : true
+			"visible" : false
+		},
+		{
+			"alignment" : "right",
+			"alpha" : 1.0,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 141,
+			"image" : "models/ConcernedApe_2.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "ConcernedApe Sunglasses",
+			"origin" : "955.00000 540.00000 0.00000",
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n",
+				"value" : "3.00000 3.00000 3.00000"
+			},
+			"size" : "85.00000 69.00000",
+			"solid" : true,
+			"visible" : false
 		},
 		{
 			"alignment" : "left",
@@ -565,12 +760,74 @@
 			"perspective" : false,
 			"scale" : 
 			{
-				"script" : "'use strict';\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tif (changedUserProperties.ui_scale !== undefined) {\n\t\tthisLayer.scale = new Vec3(3 * 1920 / engine.screenResolution.x * changedUserProperties.ui_scale, 3 * 1080 / engine.screenResolution.y * changedUserProperties.ui_scale, 1);\n\t}\n}\n",
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n\n/**\n * @param {Object} changedUserProperties - only includes user properties that were recently changed!\n */\nexport function applyUserProperties(changedUserProperties) {\n\tthisLayer.scale = new Vec3(3 * shared.canvasToScreen * shared.ui_scale);\n}\n",
 				"value" : "3.00000 3.00000 3.00000"
 			},
 			"size" : "111.00000 57.00000",
 			"solid" : true,
-			"visible" : true
+			"visible" : false
+		},
+		{
+			"alignment" : "bottomright",
+			"alpha" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\nlet minAlpha = 0.05;\nlet maxAlpha = 0.75;\nlet fadeTime = 0.25;\nlet mouseHover = false;\n\n/**\n * @param {Number} value - for property 'alpha'\n * @return {Number} - update current property value\n */\nexport function update(value) {\n\tif (!mouseHover)\n\t\tthisLayer.alpha -= (maxAlpha - minAlpha) / fadeTime * engine.frametime;\n\telse\n\t\tthisLayer.alpha += (maxAlpha - minAlpha) / fadeTime * engine.frametime * 5.0;\n\tthisLayer.alpha = Helpers.clamp(thisLayer.alpha, minAlpha, maxAlpha);\n}\n\n/**\n * @param {ICursorEvent} event\n */\nexport function cursorEnter(event) {\n\tmouseHover = true;\n}\n\n/**\n * @param {ICursorEvent} event\n */\nexport function cursorLeave(event) {\n\tmouseHover = false;\n}",
+				"value" : 0.05000000074505806
+			},
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 1.00000 1.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 134,
+			"image" : "models/Skip.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Skip Button",
+			"origin" : 
+			{
+				"script" : "'use strict';\n\nexport function init() {\n\tresizeScreen();\n}\n\nexport function resizeScreen() {\n\tthisLayer.origin = new Vec3(shared.screenBoundsX.y - 20, shared.screenBoundsY.x + 20, 0);\n}\n",
+				"value" : "1900.00000 20.00000 0.00000"
+			},
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\nconst Helpers = shared.OMGHelpers;\n\nlet fadeTime = 0.25;\nlet minScale = 3.0;\nlet maxScale = 3.5;\nlet minAlpha = 0.075;\nlet maxAlpha = 0.75;\n\nlet mouseHover = false;\n\n/**\n * @param {Number} value - for property 'alpha'\n * @return {Number} - update current property value\n */\nexport function update(value) {\n\tif (!mouseHover) {\n\t\tthisLayer.alpha -= (maxAlpha - minAlpha) / fadeTime * engine.frametime;\n\t\tthisLayer.scale = new Vec3(thisLayer.scale.x - (maxScale - minScale) * shared.canvasToScreen / fadeTime * engine.frametime);\n\t}\n\telse {\n\t\tthisLayer.alpha += (maxAlpha - minAlpha) / fadeTime * engine.frametime * 5.0;\n\t\tthisLayer.scale = new Vec3(thisLayer.scale.x + (maxScale - minScale) * shared.canvasToScreen / fadeTime * engine.frametime * 5.0);\n\t}\n\tthisLayer.alpha = Helpers.clamp(thisLayer.alpha, minAlpha, maxAlpha);\n\tthisLayer.scale = Helpers.clamp(thisLayer.scale, new Vec3(minScale * shared.canvasToScreen), new Vec3(maxScale * shared.canvasToScreen));\n}\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function init(value) {\n\treturn new Vec3(minScale * shared.canvasToScreen);\n}\n\n/**\n * @param {Vec2} size\n */\nexport function resizeScreen(size) {\n\tthisLayer.scale = new Vec3(minScale * shared.canvasToScreen);\n}\n\n/**\n * @param {ICursorEvent} event\n */\nexport function cursorEnter(event) {\n\tmouseHover = true;\n}\n\n/**\n * @param {ICursorEvent} event\n */\nexport function cursorLeave(event) {\n\tmouseHover = false;\n}",
+				"value" : "3.00000 3.00000 3.00000"
+			},
+			"size" : "22.00000 15.00000",
+			"solid" : true,
+			"visible" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {ICursorEvent} event\n */\nexport function cursorClick(event) {\n\tshared.SceneManager.skipPressed();\n}\n",
+				"value" : true
+			}
+		},
+		{
+			"alignment" : "center",
+			"alpha" : 0.20000000298023224,
+			"angles" : "0.00000 0.00000 0.00000",
+			"brightness" : 1.0,
+			"color" : "1.00000 0.00000 0.00000",
+			"colorBlendMode" : 0,
+			"copybackground" : true,
+			"id" : 146,
+			"image" : "models/util/solidlayer.json",
+			"ledsource" : false,
+			"locktransforms" : false,
+			"name" : "Screenbounds (unused)",
+			"origin" : "960.00000 540.00000 0.00000",
+			"parallaxDepth" : "1.00000 1.00000",
+			"perspective" : false,
+			"scale" : 
+			{
+				"script" : "'use strict';\n\n/**\n * @param {Vec3} value - for property 'scale'\n * @return {Vec3} - update current property value\n */\nexport function update(value) {\n\tlet boundsX = new Vec2(0, engine.canvasSize.x);\n\tlet boundsY = new Vec2(0, engine.canvasSize.y);\n\tlet screenAspectRatio = engine.screenResolution.x / engine.screenResolution.y;\n\tlet canvasAspectRatio = engine.canvasSize.x / engine.canvasSize.y;\n\tif (screenAspectRatio > canvasAspectRatio) {\n\t\tlet height = engine.screenResolution.y * engine.canvasSize.x / engine.screenResolution.x;\n\t\tlet cornerOffset = (engine.canvasSize.y - height) / 2;\n\t\tboundsY = new Vec2(cornerOffset, engine.canvasSize.y - cornerOffset);\n\t}\n\telse {\n\t\tlet width = engine.screenResolution.x * engine.canvasSize.y / engine.screenResolution.y;\n\t\tlet cornerOffset = (engine.canvasSize.x - width) / 2;\n\t\tboundsX = new Vec2(cornerOffset, engine.canvasSize.x - cornerOffset);\n\t}\n\n\tthisLayer.scale = new Vec3(boundsX.y - boundsX.x, boundsY.y - boundsY.x);\n\t// if (engine.screenResolution.x / engine.canvasSize.x > engine.screenResolution.y / engine.canvasSize.y)\n\t// \tthisLayer.scale = new Vec3(engine.canvasSize.x, engine.canvasSize.y / shared.canvasToScreen, 1);\n\t// else\n\t// \tthisLayer.scale = new Vec3(engine.canvasSize.x / shared.canvasToScreen, engine.canvasSize.y, 1);\n}\n",
+				"value" : "1.00000 1.00000 1.00000"
+			},
+			"size" : "1.00000 1.00000",
+			"solid" : true,
+			"visible" : false
 		}
 	],
 	"version" : 1
