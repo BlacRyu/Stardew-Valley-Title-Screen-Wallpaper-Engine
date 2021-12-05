@@ -6,8 +6,7 @@ Sound file names: https://docs.google.com/spreadsheets/d/1CpDrw23peQiq-C7F2FjYOM
 
 
 ToDo:
-- Big Cloud(s)
-- Stars
+- Splash Screen Surprise
 - Reactive leaves
 - Junimos
 - Alien
@@ -16,7 +15,6 @@ ToDo:
 
 
 Possible features:
-- Allow for arbitrary scaling.
 - Day/Night cycle.
 - Different weathers
 	- Rain
@@ -34,11 +32,13 @@ Possible features:
 
 
 Done:
+X Allow for arbitrary scaling.
 X Title card
 X Title buttons
 X Small Clouds
 X Intro birds
-
+X Big Cloud(s)
+X Stars
 
 
 

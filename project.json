@@ -1,15 +1,25 @@
 {
+	"contentrating" : "Everyone",
 	"file" : "scene.json",
 	"general" : 
 	{
 		"properties" : 
 		{
+			"extra_effects" : 
+			{
+				"condition" : "false",
+				"index" : 4,
+				"order" : 104,
+				"text" : "Extra Effects",
+				"type" : "bool",
+				"value" : false
+			},
 			"schemecolor" : 
 			{
 				"order" : 0,
 				"text" : "ui_browse_properties_scheme_color",
 				"type" : "color",
-				"value" : "0 0 0"
+				"value" : "0 0.7372549019607844 1"
 			},
 			"show_developer_splash" : 
 			{
@@ -27,6 +37,23 @@
 				"type" : "bool",
 				"value" : true
 			},
+			"show_menu_buttons" : 
+			{
+				"index" : 3,
+				"order" : 103,
+				"text" : "Show Menu Buttons",
+				"type" : "bool",
+				"value" : true
+			},
+			"sky_glow" : 
+			{
+				"condition" : "false && (extra_effects.value === true)",
+				"index" : 5,
+				"order" : 105,
+				"text" : "Sky Glow",
+				"type" : "bool",
+				"value" : false
+			},
 			"ui_scale" : 
 			{
 				"fraction" : true,
@@ -35,13 +62,15 @@
 				"min" : 0.5,
 				"order" : 100,
 				"precision" : 1,
-				"step" : 0.10000000000000001,
+				"step" : 0.1,
 				"text" : "UI Scale",
 				"type" : "slider",
 				"value" : 1
 			}
 		}
 	},
+	"preview" : "preview.jpg",
+	"tags" : [ "Game" ],
 	"title" : "Stardew Valley Title Screen",
 	"type" : "scene",
 	"version" : 0

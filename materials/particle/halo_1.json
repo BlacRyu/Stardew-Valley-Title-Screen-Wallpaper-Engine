@@ -3,17 +3,13 @@
 	[
 		{
 			"blending" : "translucent",
-			"combos" : 
-			{
-				"spritesheet" : 1,
-				"version" : 2
-			},
+			"combos" : {},
 			"constantshadervalues" : {},
-			"cullmode" : "nocull",
+			"cullmode" : "normal",
 			"depthtest" : "disabled",
 			"depthwrite" : "disabled",
-			"shader" : "genericimage2",
-			"textures" : [ "Bird" ]
+			"shader" : "genericparticle",
+			"textures" : [ "particle/leaf_green" ]
 		}
 	]
 }
